@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 import {useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
-
+import { setDoc, doc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
 
 export const authContext = createContext()
 
@@ -11,17 +11,26 @@ export const useAuth = () =>{
     return context
 }
 
+
+
 export function AuthProvider({children}){
 
     const [userLoged, setUserLoged] = useState(null)
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate();
-    const signup =(email, password) => {
+    const signup =(email, password, name) => {
         createUserWithEmailAndPassword(auth, email, password).then((userCredential) => {
             // Signed in
             const user = userCredential.user;
             console.log('firebaseuser',user.uid)
             setUserLoged(user)
+            
+            setDoc(doc(db,"usuarios", user.uid), {
+                password: password,
+                name: name,
+                email: email
+            }) 
+           
             // ...
         }).catch((error) => {
                 const errorCode = error.code;

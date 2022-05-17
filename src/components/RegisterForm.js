@@ -24,7 +24,7 @@ function RegisterForm(props) {
         e.preventDefault();
         //tengo que validar que tiene todo lo q necesita primero @valid_form(values)
         try {
-            await signup(user.userEmail, user.userPassword)  //crea el user en la bd
+            await signup(user.userEmail, user.userPassword, user.userName)  //crea el user en la bd
             navigate('/')
             console.log('USUARIO CREADO' ,userLoged)
         } catch (error) {

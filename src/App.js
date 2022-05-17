@@ -7,6 +7,7 @@ import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/RegisterForm';
 import Dialogs from './components/Dialogs';
+import Users from './components/Users'
 import { ToastContainer } from 'react-toastify';
 
 
@@ -22,6 +23,7 @@ function App() {
         }/>
         <Route path='/login' element={<Login/>} />
         <Route path='/Register' element={<Register/>} />
+        <Route path='/users' element={<Users/>} />
       </Routes>
       <ToastContainer/>
         <Dialogs/>
