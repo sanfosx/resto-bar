@@ -57,45 +57,51 @@ const LinkForm = (props) => {
     return (
 
         <form className="card card-body" onSubmit={handleSubmit}> 
-        <div className="form-group input-group p-2">
-            <div className="input-group-text bg-light">
-                <i className="material-icons">insert_link</i>
+            
+            <h1 className="text-center">{props.currentId === '' ? 'Agregar Datos' : 'Modificar Dato'}</h1>
+    
+            <div className="form-group input-group p-2">
+                <div className="input-group-text bg-light">
+                    <i className="material-icons">insert_link</i>
+                </div>
+                <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="https//:someurl.com" 
+                    name="url" 
+                    onChange={handleInputChange}
+                    value={values.url}    
+                />
             </div>
-            <input 
-                type="text" 
-                className="form-control" 
-                placeholder="https//:someurl.com" 
-                name="url" 
-                onChange={handleInputChange}
-                value={values.url}    
-            />
-        </div>
 
-        <div className="form-group input-group p-2">
-            <div className="input-group-text bg-light">
-                <i className="material-icons">create</i>
+            <div className="form-group input-group p-2">
+                <div className="input-group-text bg-light">
+                    <i className="material-icons">create</i>
+                </div>
+                <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="web site name" 
+                    name="name" 
+                    onChange={handleInputChange}
+                    value={values.name}
+                />
             </div>
-            <input 
-                type="text" 
-                className="form-control" 
-                placeholder="web site name" 
-                name="name" 
-                onChange={handleInputChange}
-                value={values.name}
-            />
-        </div>
 
-        <div className="form-group p-2">
-           <textarea 
-                name="description" 
-                rows="3" 
-                className="form-control" 
-                placeholder="write a description" 
-                onChange={handleInputChange}
-                value={values.description}
-            />
-        </div>
-        <button className="btn btn-primary btn-block">{props.currentId === '' ? 'Save' : 'Update'}</button>
+            <div className="form-group p-2">
+            <textarea 
+                    name="description" 
+                    rows="3" 
+                    className="form-control" 
+                    placeholder="write a description" 
+                    onChange={handleInputChange}
+                    value={values.description}
+                />
+            </div>
+                <button className="btn btn-success btn-block">{props.currentId === '' ? 'Save' : 'Update'}</button>
+            
+            {props.currentId === '' ? '' : <button className="btn btn-outline-danger btn-block mt-2" onClick={() =>{props.setCurrentId('')}}>Cancel</button>}
+
         </form>
     )
 }

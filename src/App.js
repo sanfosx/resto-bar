@@ -1,20 +1,31 @@
 import React from 'react';
-import Links from './components/Links';
-import LinkForm from './components/LinkForm';
+import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import './firebaseConfig'
-import { ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-//require('dotenv').config()
+import Home from './components/Home';
+import Login from './components/Login';
+import Register from './components/RegisterForm';
+import Dialogs from './components/Dialogs';
+import { ToastContainer } from 'react-toastify';
+
+
 
 function App() {
   return (
-   <div className='container p-10'>
-      <div className='row'>
-      <Links><LinkForm/></Links>
-      </div>
-   </div>
-     
-  
+    <AuthProvider>
+      <Routes>
+        <Route path='/' element={
+         
+            <Home />
+         
+        }/>
+        <Route path='/login' element={<Login/>} />
+        <Route path='/Register' element={<Register/>} />
+      </Routes>
+      <ToastContainer/>
+        <Dialogs/>
+    </AuthProvider>
   );
 }
 
