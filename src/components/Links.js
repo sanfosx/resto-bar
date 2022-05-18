@@ -72,8 +72,8 @@ const Links = () =>{
 
     
     const onDeleteInDB = async (id) =>{
+
         console.log("a ver q tiene el id", id)
-        
         await deleteDoc(doc(db, "datos", id));
         console.log("borrando: ",id)
         toast('Dato Eliminado',{
@@ -106,7 +106,7 @@ const Links = () =>{
                                 <h4>{dato.name}</h4>
                                 <div>
                                 <i className='material-icons text-info' onClick={() => setCurrentId(dato.id)}>create</i>
-                                <i className='material-icons text-danger' onClick={() => {changeStateDialog1(!stateDialog1); {setUserId(dato.id)}; console.log("guauaua",userId)}}>close</i>
+                                <i className='material-icons text-danger' onClick={() => {changeStateDialog1(!stateDialog1); {setUserId(dato.id)}}}>close</i>
                                 </div>
                             </div>
                             
@@ -131,7 +131,7 @@ const Links = () =>{
                         <p className=" text-center text-danger m-2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Odit, sint.</p>
                         <div>
                             <button className="btn btn-outline-primary m-2" onClick={() => {changeStateDialog1(!stateDialog1)}}>cancel</button>
-                            <button className="btn btn-danger m-2" onClick={() => {onDeleteInDB(userId); console.log(userId, "porque no tienen nada?"); changeStateDialog1(!stateDialog1)}}>Borrar</button>
+                            <button className="btn btn-danger m-2" onClick={() => {onDeleteInDB(userId); changeStateDialog1(!stateDialog1)}}>Borrar</button>
                         </div>
                     
                     </Contenido>
