@@ -1,15 +1,24 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../firebaseConfig";
 import {useNavigate } from "react-router-dom";
-import { setDoc, doc } from "firebase/firestore";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
+import { setDoc, doc, collection } from "firebase/firestore";
+import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut, 
+    GoogleAuthProvider,
+    signInWithPopup, 
+} 
+from "firebase/auth";
 
 export const authContext = createContext()
 
-export const useAuth = () =>{
-    const context = useContext(authContext)
-    return context
-}
+export const useAuth = () => {
+    const context = useContext(authContext);
+    if (!context) throw new Error("There is no Auth provider");
+    return context;
+  };
 
 
 
@@ -18,42 +27,22 @@ export function AuthProvider({children}){
     const [userLoged, setUserLoged] = useState(null)
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate();
-    const signup =(email, password, name) => {
-        createUserWithEmailAndPassword(auth, email, password).then((userCredential) => {
-            // Signed in
-            const user = userCredential.user;
-            console.log('firebaseuser',user.uid)
-            setUserLoged(user)
-            
-            setDoc(doc(db,"usuarios", user.uid), {
-                password: password,
-                name: name,
-                email: email
-            }) 
-           
-            // ...
-        }).catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-            // ..
-            });
-        
-    }
+
+    const signup = (email, password) => {
+        return createUserWithEmailAndPassword(auth, email, password);
+    };
 
     const login =(email, password) => {
-        signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed in
-          setUserLoged(userCredential.user)
-          console.log( 'user del login',userLoged)
-          // ...
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-        });
-      
-        
+
+       return signInWithEmailAndPassword(auth, email, password)
+    }
+
+    const loginWithGoogle =() =>{
+
+        const googleProvider =new GoogleAuthProvider()
+
+        return signInWithPopup(auth, googleProvider)
+
     }
 
     const logout = () =>{
@@ -64,18 +53,26 @@ export function AuthProvider({children}){
         setLoading(false)
     }
 
-    useEffect( () => {
-        const unSuscribe = onAuthStateChanged(auth, (currentUser) =>{
+    const addUserInFirestore = async (id, data)=>{
 
-            setUserLoged(currentUser)
-            setLoading(false)
-            console.log('currentUser: ', currentUser)
-        })
-        return unSuscribe()
-    }, [] )
+        await setDoc(doc(db, "usuarios", id), {
+            password: data.password,
+            name: data.name,
+            email: data.email
+        });
+        
+    }
 
+    useEffect(() => {
+        const unsubuscribe = onAuthStateChanged(auth, (currentUser) => {
+          console.log({ currentUser });
+          setUserLoged(currentUser);
+          setLoading(false);
+        });
+        return () => unsubuscribe();
+      }, []);
     return (
-        <authContext.Provider value={{signup, login, userLoged, logout, loading}}>
+        <authContext.Provider value={{signup, login, userLoged, logout, loading, loginWithGoogle, addUserInFirestore}}>
             {children}
         </authContext.Provider>
     )

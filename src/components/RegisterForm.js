@@ -1,6 +1,7 @@
 import {React, useState} from 'react'
 import { useAuth} from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Alerts from './Alerts'
 
 
 
@@ -8,8 +9,8 @@ import { useNavigate } from 'react-router-dom';
 function RegisterForm(props) {
 
     
-    const {signup, userLoged} = useAuth();
-    
+    const {signup, addUserInFirestore} = useAuth();
+    const [error, setError] = useState();
     const navigate = useNavigate();
     const inicialStateValues={
         userName:'',
@@ -24,15 +25,18 @@ function RegisterForm(props) {
         e.preventDefault();
         //tengo que validar que tiene todo lo q necesita primero @valid_form(values)
         try {
-            await signup(user.userEmail, user.userPassword, user.userName)  //crea el user en la bd
-            navigate('/')
-            console.log('USUARIO CREADO' ,userLoged)
+            await signup(user.userEmail, user.userPassword).then((userCredential) => {
+                // Signed in
+                const userDb = userCredential.user;
+                console.log('USUARIO CREADO', userDb )
+                addUserInFirestore(userDb.uid,user)
+                navigate('/')
+              })
         } catch (error) {
-
-            console.log(error)
+            setError(error.message)
+            console.log(error.message)
         }
         
-
         setUser({...inicialStateValues})
       };
 
@@ -50,7 +54,7 @@ function RegisterForm(props) {
     <form className="card card-body col-md-4 p-2" onSubmit={handleSubmit}> 
             
             <h1 className="text-center">Register</h1>
-    
+            {error && <Alerts message={error}/>}
             <div className="form-group input-group p-2">
                 <div className="input-group-text bg-light">
                     <i className="material-icons">person</i>

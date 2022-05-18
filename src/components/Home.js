@@ -19,8 +19,6 @@ function Home() {
 
     if(loading) return <h1>Loading...</h1>
 
-    if(!userLoged) return navigate('/login')
-
     return (
      <div className='container p-10'>
         <div className='row'>

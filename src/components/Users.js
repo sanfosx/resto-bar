@@ -7,12 +7,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import Dialogs from "./Dialogs";
 import styled from 'styled-components';
 import { useAuth } from "../context/AuthContext";
+import Alerts from "./Alerts";
 
 
 
  const Users = () =>{
 
-   
+    const [error, setError] = useState();
     const [datos, setDatos] = useState([])
 
     const [currentId, setCurrentId] = useState("")
@@ -21,51 +22,36 @@ import { useAuth } from "../context/AuthContext";
 
     const [userId, setUserId] = useState('');
 
-    const {signup, deleteUser} = useAuth();
+    const {login, signup, addUserInFirestore} = useAuth();
 
+    
 
-    const addOrEditInDB = async (values_object)=>{//agrega en la bd
-        
+    const addUserInDB = async (values_object)=>{//agrega en la bd
         if(currentId === ''){
-        // Add a new document in collection "datos
+        // Add a new user
             try {
-                 await signup(values_object.email, values_object.password, values_object.name)  //crea el user en la bd
-                
-                console.log('USUARIO CREADO' )
+                 await signup(values_object.email, values_object.password).then((userCredential) => {
+                    // Signed in
+                    const userDb = userCredential.user;
+                    console.log('USUARIO CREADO', userDb )
+                    addUserInFirestore(userDb.uid,values_object)
+                  })
+                 
+                toast('Nuevo Usuario Agregado',{
+                    type: 'success',
+                    position: 'bottom-right',
+                    autoClose: 2000,
+                    theme: 'dark'
+                });
 
             } catch (error) {
-
+                setError(error.message)
                 console.log(error)
             }
-
-            toast('Nuevo dato Agregado',{
-                type: 'success',
-                position: 'bottom-right',
-                autoClose: 2000,
-                theme: 'dark'
-            });
-         //add user
-           
-         
-        }else{
-
-            // write a document in collection "datos"
-            await setDoc(doc(db, "usuarios", currentId), {
-                password: values_object.password,
-                name: values_object.name,
-                email: values_object.email
-            });
-            setCurrentId('')
-            toast('Dato Modificado',{
-                type: 'warning',
-                position: 'bottom-right',
-                autoClose: 2000,
-                theme: 'dark'
-            });
         }
     }
 
-    const readDB= async ()=>{//lee en la bd y actualiza con cualquier cambio
+    const readDB= async ()=>{//lee en la bd y actualiza con cualquier cambio se usa en el useEffect
 
         onSnapshot(collection(db,'usuarios'),(doc)=>{
             
@@ -81,18 +67,31 @@ import { useAuth } from "../context/AuthContext";
 
     
     const onDeleteInDB = async (id) =>{
-        console.log("a ver q tiene el id", id)
-         deleteUser(currentId)
-        await deleteDoc(doc(db, "usuarios", id));
-        console.log("borrando: ",id)
-        toast('Dato Eliminado',{
-            type: 'error',
-            position: 'bottom-right',
-            autoClose: 2000,
-            theme: 'dark'
-        });
+
+        try {
+            console.log("a ver q tiene el id", id)
+            await deleteDoc(doc(db, "usuarios", id));
+            console.log("borrando: ",id)
+            toast('Dato Eliminado',{
+                type: 'error',
+                position: 'bottom-right',
+                autoClose: 2000,
+                theme: 'dark'
+            });
+        } catch (error) {
+            setError(error.message)
+        }
+        
     }
-    
+
+    const authenticateUser = async(email, password) => {
+        try {
+            await login(email, password)
+        } catch (error) {
+            setError(error.message)
+            console.log(error.message)
+        }
+    }    
 
     useEffect(()=>{
         readDB()
@@ -103,37 +102,33 @@ import { useAuth } from "../context/AuthContext";
     return (
         <div className="container">
             <div className="col-md-4 p-2">
-            <UserForm {...{addOrEditInDB, currentId, datos, setCurrentId}}/>
+                <UserForm {...{addUserInDB, currentId, datos, setCurrentId, error, setError}}/>
             </div>
-        
             <div className="col-md-4 p-2">
                 {datos.map((dato)=>(
-
                     <div className="card mb-1" key={dato.id}>
                         <div className="card-body">
                             <div className="d-flex justify-content-between">
                                 <h4>{dato.name}</h4>
                                 <div>
                                 <i className='material-icons text-info' onClick={() => setCurrentId(dato.id)}>create</i>
-                                <i className='material-icons text-danger' onClick={() => {changeStateDialog1(!stateDialog1); {setUserId(dato.id)}; console.log("guauaua",userId)}}>close</i>
+                                <i className='material-icons text-danger' onClick={() => {changeStateDialog1(!stateDialog1); {authenticateUser(dato.email, dato.password)}}}>close</i>
                                 </div>
                             </div>
-                            
                             <p>{dato.email}</p>
                             <p>{dato.password}</p>
                         </div>
                     </div>
-                
                 ))}
                 <Dialogs
-                state = {stateDialog1} 
-                changeStateDialog = {changeStateDialog1}
-                paddingDialog = {'20px'}
-                positionDialog = {'center'}
-                showHeaderDialog ={false}
-                showOverlayDialog = {true}
-                showCloseBtn= {false}
-                titleDialog = 'is a title'
+                    state = {stateDialog1} 
+                    changeStateDialog = {changeStateDialog1}
+                    paddingDialog = {'20px'}
+                    positionDialog = {'center'}
+                    showHeaderDialog ={false}
+                    showOverlayDialog = {true}
+                    showCloseBtn= {false}
+                    titleDialog = 'is a title'
                 > 
                     <Contenido>
                         <h1 className="text-danger"> <span>Esta seguro de Eliminar</span></h1>
@@ -142,13 +137,9 @@ import { useAuth } from "../context/AuthContext";
                             <button className="btn btn-outline-primary m-2" onClick={() => {changeStateDialog1(!stateDialog1)}}>cancel</button>
                             <button className="btn btn-danger m-2" onClick={() => {onDeleteInDB(userId); console.log(userId, "porque no tienen nada?"); changeStateDialog1(!stateDialog1)}}>Borrar</button>
                         </div>
-                    
                     </Contenido>
-                    
-
                 </Dialogs>
-            </div>
-            
+            </div> 
         </div>
     )
 }
